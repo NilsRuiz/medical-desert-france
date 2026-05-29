@@ -1,0 +1,42 @@
+api:
+  replicaCount: 1
+  image:
+    repository: medical-desert-api
+    tag: local
+    pullPolicy: IfNotPresent
+  env:
+    APP_ENV: local
+    API_PORT: "8000"
+    MODEL_ARTIFACT_PATH: /models/model.joblib
+    MODEL_VERSION: local
+    CORS_ORIGINS: '["http://medical-desert.local","http://localhost:8080"]'
+
+dashboard:
+  replicaCount: 1
+  image:
+    repository: medical-desert-dashboard
+    tag: local
+    pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: medical-desert.local
+      paths:
+        dashboard:
+          path: /
+          pathType: Prefix
+        api:
+          path: /api
+          pathType: Prefix
+        mlflow:
+          path: /mlflow
+          pathType: Prefix
+
+postgresql:
+  auth:
+    password: local-change-me
+
+database:
+  password: local-change-me

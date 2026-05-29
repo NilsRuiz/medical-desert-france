@@ -1,0 +1,105 @@
+{{- if .Values.jobs.migrations.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "mdf.fullname" . }}-migrate
+  labels:
+    {{- include "mdf.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migration
+  {{- if .Values.jobs.migrations.hook }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+  {{- end }}
+spec:
+  backoffLimit: {{ .Values.jobs.backoffLimit }}
+  ttlSecondsAfterFinished: {{ .Values.jobs.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "mdf.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migration
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: {{ include "mdf.serviceAccountName" . }}
+      containers:
+        - name: migrate
+          image: "{{ .Values.jobs.image.repository }}:{{ .Values.jobs.image.tag }}"
+          imagePullPolicy: {{ .Values.jobs.image.pullPolicy }}
+          command:
+            {{- toYaml .Values.jobs.migrations.command | nindent 12 }}
+          env:
+            {{- include "mdf.env" . | nindent 12 }}
+          resources:
+            {{- toYaml .Values.jobs.resources | nindent 12 }}
+---
+{{- end }}
+{{- if .Values.jobs.seed.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "mdf.fullname" . }}-seed
+  labels:
+    {{- include "mdf.labels" . | nindent 4 }}
+    app.kubernetes.io/component: seed
+spec:
+  backoffLimit: {{ .Values.jobs.backoffLimit }}
+  ttlSecondsAfterFinished: {{ .Values.jobs.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "mdf.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: seed
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: {{ include "mdf.serviceAccountName" . }}
+      containers:
+        - name: seed
+          image: "{{ .Values.jobs.image.repository }}:{{ .Values.jobs.image.tag }}"
+          imagePullPolicy: {{ .Values.jobs.image.pullPolicy }}
+          command:
+            {{- toYaml .Values.jobs.seed.command | nindent 12 }}
+          env:
+            {{- include "mdf.env" . | nindent 12 }}
+          resources:
+            {{- toYaml .Values.jobs.resources | nindent 12 }}
+---
+{{- end }}
+{{- if .Values.jobs.training.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "mdf.fullname" . }}-train
+  labels:
+    {{- include "mdf.labels" . | nindent 4 }}
+    app.kubernetes.io/component: training
+spec:
+  backoffLimit: {{ .Values.jobs.backoffLimit }}
+  ttlSecondsAfterFinished: {{ .Values.jobs.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "mdf.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: training
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: {{ include "mdf.serviceAccountName" . }}
+      containers:
+        - name: train
+          image: "{{ .Values.jobs.image.repository }}:{{ .Values.jobs.image.tag }}"
+          imagePullPolicy: {{ .Values.jobs.image.pullPolicy }}
+          command:
+            {{- toYaml .Values.jobs.training.command | nindent 12 }}
+          env:
+            {{- include "mdf.env" . | nindent 12 }}
+          volumeMounts:
+            - name: model-output
+              mountPath: /models
+          resources:
+            {{- toYaml .Values.jobs.resources | nindent 12 }}
+      volumes:
+        - name: model-output
+          emptyDir: {}
+{{- end }}
+

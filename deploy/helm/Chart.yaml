@@ -1,0 +1,12 @@
+apiVersion: v2
+name: medical-desert-france
+description: Kubernetes-first MLOps deployment for the Medical Desert France API, dashboard, MLflow, jobs, and PostgreSQL.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+dependencies:
+  - name: postgresql
+    version: 15.5.38
+    repository: oci://registry-1.docker.io/bitnamicharts
+    condition: postgresql.enabled
+

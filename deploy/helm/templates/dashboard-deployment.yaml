@@ -1,0 +1,69 @@
+{{- if .Values.dashboard.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mdf.fullname" . }}-dashboard
+  labels:
+    {{- include "mdf.labels" . | nindent 4 }}
+    app.kubernetes.io/component: dashboard
+spec:
+  replicas: {{ .Values.dashboard.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "mdf.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: dashboard
+  template:
+    metadata:
+      labels:
+        {{- include "mdf.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: dashboard
+      annotations:
+        {{- toYaml .Values.dashboard.podAnnotations | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: dashboard
+          image: "{{ .Values.dashboard.image.repository }}:{{ .Values.dashboard.image.tag }}"
+          imagePullPolicy: {{ .Values.dashboard.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.dashboard.service.targetPort }}
+          env:
+            {{- range $name, $value := .Values.dashboard.env }}
+            - name: {{ $name }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- with .Values.dashboard.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.dashboard.probes.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.dashboard.probes.initialDelaySeconds }}
+            periodSeconds: {{ .Values.dashboard.probes.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.dashboard.probes.path }}
+              port: http
+            initialDelaySeconds: {{ .Values.dashboard.probes.initialDelaySeconds }}
+            periodSeconds: {{ .Values.dashboard.probes.periodSeconds }}
+          resources:
+            {{- toYaml .Values.dashboard.resources | nindent 12 }}
+      {{- with .Values.dashboard.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.dashboard.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.dashboard.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
+

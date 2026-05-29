@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.env
+models/
+mlruns/
+data/raw/
+data/processed/
+node_modules/
+dist/
+.terraform/
+*.tfstate
+*.tfstate.*

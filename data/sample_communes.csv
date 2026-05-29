@@ -1,0 +1,6 @@
+code,name,department_code,department_name,region_code,region_name,population,apl_score,latitude,longitude
+75056,Paris,75,Paris,11,Ile-de-France,2133111,5.8,48.8566,2.3522
+13055,Marseille,13,Bouches-du-Rhone,93,Provence-Alpes-Cote d Azur,873076,4.6,43.2965,5.3698
+59350,Lille,59,Nord,32,Hauts-de-France,236234,3.2,50.6292,3.0573
+23096,Gueret,23,Creuse,75,Nouvelle-Aquitaine,12889,2.1,46.1700,1.8719
+48095,Mende,48,Lozere,76,Occitanie,12227,2.4,44.5180,3.5010

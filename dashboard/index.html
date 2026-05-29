@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Medical Desert France</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Medical Desert France</h1>
+        <p>Commune-level medical access risk dashboard</p>
+      </div>
+      <span id="api-status" class="status">API</span>
+    </header>
+
+    <main class="layout">
+      <section class="panel search-panel">
+        <form id="search-form">
+          <label for="query">Commune</label>
+          <div class="search-row">
+            <input id="query" name="query" placeholder="Search by name" autocomplete="off" />
+            <button type="submit">Search</button>
+          </div>
+        </form>
+        <ul id="commune-list" class="commune-list"></ul>
+      </section>
+
+      <section class="panel result-panel">
+        <h2 id="selected-name">Select a commune</h2>
+        <dl id="commune-details" class="details"></dl>
+        <button id="predict-button" disabled>Predict risk</button>
+        <div id="prediction" class="prediction"></div>
+      </section>
+
+      <section class="panel summary-panel">
+        <h2>Dashboard Metrics</h2>
+        <div id="summary" class="metrics"></div>
+        <h3>Regions</h3>
+        <div id="regions" class="metrics compact"></div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

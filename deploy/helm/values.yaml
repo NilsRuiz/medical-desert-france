@@ -1,0 +1,200 @@
+global:
+  imagePullSecrets: []
+  storageClass: ""
+
+nameOverride: ""
+fullnameOverride: ""
+
+api:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ghcr.io/your-org/medical-desert-france-api
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  command:
+    - uvicorn
+    - medical_desert_france.api:app
+    - --host
+    - 0.0.0.0
+    - --port
+    - "8000"
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8000
+  env:
+    APP_ENV: production
+    API_PORT: "8000"
+    MODEL_ARTIFACT_PATH: /models/model.joblib
+    MODEL_VERSION: "0.1.0"
+    CORS_ORIGINS: '["http://localhost:5173"]'
+  extraEnv: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  probes:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 2
+    failureThreshold: 6
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+dashboard:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: ghcr.io/your-org/medical-desert-france-dashboard
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+  env:
+    API_BASE_URL: /api
+  extraEnv: []
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+  probes:
+    path: /
+    initialDelaySeconds: 10
+    periodSeconds: 10
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+mlflow:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: ghcr.io/mlflow/mlflow
+    tag: v2.13.2
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 5000
+  artifactRoot: /mlflow/artifacts
+  persistence:
+    enabled: true
+    size: 10Gi
+    accessModes:
+      - ReadWriteOnce
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+jobs:
+  image:
+    repository: ghcr.io/your-org/medical-desert-france-api
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  migrations:
+    enabled: true
+    hook: true
+    command:
+      - mdf
+      - migrate
+  seed:
+    enabled: true
+    hook: false
+    dataPath: /app/data/sample_communes.csv
+    command:
+      - mdf
+      - seed-db
+      - --data
+      - /app/data/sample_communes.csv
+  training:
+    enabled: true
+    hook: false
+    dataPath: /app/data/sample_communes.csv
+    outputPath: /models/model.joblib
+    command:
+      - mdf
+      - train
+      - --data
+      - /app/data/sample_communes.csv
+      - --output
+      - /models/model.joblib
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: medical-desert.local
+      paths:
+        dashboard:
+          path: /
+          pathType: Prefix
+        api:
+          path: /api
+          pathType: Prefix
+        mlflow:
+          path: /mlflow
+          pathType: Prefix
+  tls: []
+
+database:
+  existingSecret: ""
+  existingSecretKey: DATABASE_URL
+  name: medical_desert
+  username: mdf
+  password: change-me
+  host: ""
+  port: 5432
+  sslMode: disable
+
+postgresql:
+  enabled: true
+  auth:
+    username: mdf
+    password: change-me
+    database: medical_desert
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
