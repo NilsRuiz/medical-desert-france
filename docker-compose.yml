@@ -34,7 +34,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./models:/models
+      - model-artifacts:/models
     depends_on:
       postgres:
         condition: service_healthy
@@ -67,3 +67,4 @@ services:
 volumes:
   postgres-data:
   mlflow-data:
+  model-artifacts:

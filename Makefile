@@ -1,25 +1,48 @@
-.PHONY: install test lint migrate seed train api docker-build compose-up compose-down k8s-local
+PYTHON ?= $(shell if [ -x .venv/bin/python ]; then echo .venv/bin/python; else echo python; fi)
+UVICORN ?= $(shell if [ -x .venv/bin/uvicorn ]; then echo .venv/bin/uvicorn; else echo uvicorn; fi)
+MDF = PYTHONPATH=src $(PYTHON) -m medical_desert_france.cli
+
+.PHONY: install test lint env-local local-init migrate seed train local-run local-reset postgres-local-up postgres-local-down api docker-build compose-up compose-down k8s-local
 
 install:
-	python -m pip install -e ".[dev]"
+	$(PYTHON) -m pip install -e ".[dev]"
 
 test:
-	python -m pytest
+	$(PYTHON) -m pytest
 
 lint:
 	ruff check .
 
+env-local:
+	cp .env.local.example .env
+
+local-init: install env-local
+
 migrate:
-	mdf migrate
+	$(MDF) migrate
 
 seed:
-	mdf seed-db --data data/sample_communes.csv
+	$(MDF) seed-db --data data/sample_communes.csv
 
 train:
-	mdf train --data data/sample_communes.csv --output models/model.joblib
+	$(MDF) train --data data/sample_communes.csv --output local_models/model.joblib
+
+local-run: migrate seed train api
+
+local-reset: env-local
+	rm -f local.db mlflow.db
+	rm -rf local_models
+	$(MAKE) local-run
+
+postgres-local-up:
+	docker run --name mdf-postgres -e POSTGRES_USER=mdf -e POSTGRES_PASSWORD=mdf -e POSTGRES_DB=mdf -p 5432:5432 -d postgres:16-alpine
+
+postgres-local-down:
+	docker stop mdf-postgres || true
+	docker rm mdf-postgres || true
 
 api:
-	uvicorn medical_desert_france.api:app --reload
+	PYTHONPATH=src $(UVICORN) medical_desert_france.api:app --reload
 
 docker-build:
 	docker build -f Dockerfile.api -t medical-desert-api:local .

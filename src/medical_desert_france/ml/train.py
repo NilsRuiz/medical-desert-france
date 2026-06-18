@@ -13,7 +13,7 @@ from medical_desert_france.config import get_settings
 from medical_desert_france.ml.features import FEATURE_COLUMNS, build_training_frame
 
 
-def train_model(data_path: str, output_path: str = "models/model.joblib") -> dict[str, float | str]:
+def train_model(data_path: str, output_path: str = "local_models/model.joblib") -> dict[str, float | str]:
     settings = get_settings()
     mlflow.set_tracking_uri(settings.mlflow_tracking_uri)
     frame = pd.read_csv(data_path)

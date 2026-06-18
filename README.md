@@ -24,12 +24,17 @@ Primary public data sources:
 
 ## Local Python Workflow
 
+Use this workflow when running the Python API directly on your host, without Docker
+Compose. The Docker Compose database hostname is `postgres`, but that name only exists
+inside the Compose network. For host-local development, use SQLite or a PostgreSQL URL
+with `localhost`. MLflow also uses a local SQLite backend in this mode.
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
-cp .env.example .env
+cp .env.local.example .env
 ```
 
 Create tables, seed sample data, train a starter model, and run the API:
@@ -37,8 +42,20 @@ Create tables, seed sample data, train a starter model, and run the API:
 ```bash
 mdf migrate
 mdf seed-db --data data/sample_communes.csv
-mdf train --data data/sample_communes.csv --output models/model.joblib
+mdf train --data data/sample_communes.csv --output local_models/model.joblib
 uvicorn medical_desert_france.api:app --reload
+```
+
+The local MLflow tracking database is `mlflow.db`, configured through:
+
+```env
+MLFLOW_TRACKING_URI=sqlite:///mlflow.db
+```
+
+If you prefer a host PostgreSQL database, start PostgreSQL first and set:
+
+```env
+DATABASE_URL=postgresql+psycopg://mdf:mdf@localhost:5432/mdf
 ```
 
 Useful endpoints:
