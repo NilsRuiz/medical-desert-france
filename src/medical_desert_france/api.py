@@ -10,6 +10,7 @@ from medical_desert_france.models import Commune, DashboardMetric
 from medical_desert_france.schemas import (
     CommuneRead,
     DashboardMetricRead,
+    DepartmentDashboardRead,
     HealthResponse,
     ModelInfo,
     PredictionRequest,
@@ -93,6 +94,46 @@ def get_commune(code: str, session: Session = Depends(get_session)):
     if commune is None:
         raise HTTPException(status_code=404, detail="Commune not found")
     return commune
+
+
+def department_risk_class(avg_apl_score: float | None, high_risk_share: float) -> str:
+    if avg_apl_score is None:
+        return "unknown"
+    if avg_apl_score < 2.5 or high_risk_share >= 0.5:
+        return "high"
+    if avg_apl_score < 4.0 or high_risk_share > 0:
+        return "medium"
+    return "low"
+
+
+@app.get("/dashboard/departments", response_model=list[DepartmentDashboardRead])
+def dashboard_departments(session: Session = Depends(get_session)) -> list[DepartmentDashboardRead]:
+    communes = session.scalars(select(Commune).order_by(Commune.department_code, Commune.name)).all()
+    grouped: dict[str, list[Commune]] = {}
+    for commune in communes:
+        if commune.department_code:
+            grouped.setdefault(commune.department_code, []).append(commune)
+
+    departments: list[DepartmentDashboardRead] = []
+    for department_code, rows in grouped.items():
+        apl_values = [row.apl_score for row in rows if row.apl_score is not None]
+        avg_apl = sum(apl_values) / len(apl_values) if apl_values else None
+        high_risk = sum(1 for row in rows if row.apl_score is not None and row.apl_score < 2.5)
+        population = sum(row.population or 0 for row in rows)
+        departments.append(
+            DepartmentDashboardRead(
+                department_code=department_code,
+                department_name=rows[0].department_name or department_code,
+                region_code=rows[0].region_code,
+                region_name=rows[0].region_name,
+                commune_count=len(rows),
+                population=population,
+                avg_apl_score=round(avg_apl, 2) if avg_apl is not None else None,
+                high_risk_communes=high_risk,
+                risk_class=department_risk_class(avg_apl, high_risk / len(rows)),
+            )
+        )
+    return sorted(departments, key=lambda item: item.department_name)
 
 
 @app.get("/dashboard/summary", response_model=list[DashboardMetricRead])

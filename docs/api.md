@@ -46,4 +46,8 @@ GET /communes
 GET /communes/{code}
 GET /dashboard/summary
 GET /dashboard/regions
+GET /dashboard/departments
 ```
+
+`/dashboard/departments` returns department-level aggregates for the dashboard map:
+commune count, population, average APL score, high-risk commune count, and risk class.

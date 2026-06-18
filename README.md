@@ -13,6 +13,7 @@ AWS, GCP, and Azure.
 - FastAPI prediction and dashboard API.
 - PostgreSQL storage for commune metadata and dashboard-ready metrics.
 - Lightweight dashboard UI.
+- Department-level dashboard map colored by medical-access risk.
 - Docker images for the API, dashboard, training jobs, and local services.
 - Kubernetes-first deployment with Helm.
 - OpenTofu scaffolds for EKS, GKE, and AKS.
@@ -21,6 +22,46 @@ Primary public data sources:
 
 - DREES APL healthcare-access indicators: <https://www.data.gouv.fr/datasets/laccessibilite-potentielle-localisee-apl/>
 - INSEE geographic references: <https://www.insee.fr/fr/information/8740222>
+
+## Run Locally With Docker Compose
+
+This is the recommended way to run the full local stack. It starts PostgreSQL, MLflow,
+the FastAPI backend, the dashboard, and the seed-data job.
+
+```bash
+docker compose up --build
+```
+
+Open:
+
+- Dashboard: <http://localhost:8080>
+- API health: <http://localhost:8000/health>
+- Dashboard API proxy: <http://localhost:8080/api/health>
+- MLflow: <http://localhost:5000>
+
+Useful checks:
+
+```bash
+curl http://localhost:8000/health
+curl http://localhost:8080/api/health
+curl -X POST http://localhost:8000/predict \
+  -H 'content-type: application/json' \
+  -d '{"commune_code":"23096"}'
+curl http://localhost:8000/dashboard/departments
+```
+
+Stop the stack:
+
+```bash
+docker compose down
+```
+
+Reset Docker volumes, including PostgreSQL and MLflow data:
+
+```bash
+docker compose down -v
+docker compose up --build
+```
 
 ## Local Python Workflow
 
@@ -37,7 +78,16 @@ python -m pip install -e ".[dev]"
 cp .env.local.example .env
 ```
 
-Create tables, seed sample data, train a starter model, and run the API:
+You can then use the Makefile workflow:
+
+```bash
+make migrate
+make seed
+make train
+make api
+```
+
+Or run the commands directly:
 
 ```bash
 mdf migrate
@@ -58,6 +108,16 @@ If you prefer a host PostgreSQL database, start PostgreSQL first and set:
 DATABASE_URL=postgresql+psycopg://mdf:mdf@localhost:5432/mdf
 ```
 
+## Dashboard And Map
+
+The dashboard includes commune search, prediction display, summary metrics, and a
+department-level risk map. The map uses `GET /dashboard/departments` and the local
+GeoJSON asset at `dashboard/assets/departments.geojson`.
+
+The current map asset is intentionally small and covers the sample departments in
+`data/sample_communes.csv`: `13`, `23`, `48`, `59`, and `75`. It can be replaced later
+with a full simplified French departments GeoJSON while keeping the same API contract.
+
 Useful endpoints:
 
 - `GET /health`
@@ -67,6 +127,7 @@ Useful endpoints:
 - `POST /predict`
 - `GET /dashboard/summary`
 - `GET /dashboard/regions`
+- `GET /dashboard/departments`
 
 Example prediction:
 
@@ -75,6 +136,24 @@ curl -X POST http://localhost:8000/predict \
   -H 'content-type: application/json' \
   -d '{"commune_code":"23096"}'
 ```
+
+## Troubleshooting
+
+If the dashboard container logs this error:
+
+```text
+host not found in upstream "api"
+```
+
+rebuild the dashboard image after pulling the latest config:
+
+```bash
+docker compose down
+docker compose up --build
+```
+
+The dashboard Nginx config uses Docker's embedded DNS resolver so the API service is
+resolved at request time, not when Nginx starts.
 
 ## Deployment Model
 

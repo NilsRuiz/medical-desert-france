@@ -1,12 +1,18 @@
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.pool import StaticPool
 
 from medical_desert_france.api import app
-from medical_desert_france.db import Base, build_engine, get_session
+from medical_desert_france.db import Base, get_session
 from medical_desert_france.models import Commune, DashboardMetric
 
 
 def test_api_health_and_commune_prediction() -> None:
-    engine = build_engine("sqlite+pysqlite:///:memory:")
+    engine = create_engine(
+        "sqlite+pysqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
     Base.metadata.create_all(bind=engine)
 
     with engine.begin() as connection:
@@ -55,5 +61,8 @@ def test_api_health_and_commune_prediction() -> None:
     prediction = client.post("/predict", json={"commune_code": "23096"}).json()
     assert prediction["risk_class"] == "high"
     assert client.get("/dashboard/summary").json()[0]["metric_name"] == "communes"
+    departments = client.get("/dashboard/departments").json()
+    assert departments[0]["department_code"] == "23"
+    assert departments[0]["risk_class"] == "high"
 
     app.dependency_overrides.clear()

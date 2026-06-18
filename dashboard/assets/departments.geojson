@@ -1,0 +1,195 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "59",
+        "name": "Nord",
+        "label": [
+          3.15,
+          50.55
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              2.1,
+              50.0
+            ],
+            [
+              4.2,
+              50.1
+            ],
+            [
+              4.1,
+              51.1
+            ],
+            [
+              2.4,
+              51.2
+            ],
+            [
+              2.1,
+              50.0
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "75",
+        "name": "Paris",
+        "label": [
+          2.35,
+          48.86
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              2.2,
+              48.78
+            ],
+            [
+              2.47,
+              48.78
+            ],
+            [
+              2.47,
+              48.94
+            ],
+            [
+              2.2,
+              48.94
+            ],
+            [
+              2.2,
+              48.78
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "23",
+        "name": "Creuse",
+        "label": [
+          2.05,
+          46.1
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              1.35,
+              45.65
+            ],
+            [
+              2.65,
+              45.7
+            ],
+            [
+              2.75,
+              46.55
+            ],
+            [
+              1.55,
+              46.65
+            ],
+            [
+              1.35,
+              45.65
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "48",
+        "name": "Lozere",
+        "label": [
+          3.5,
+          44.55
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              2.95,
+              44.05
+            ],
+            [
+              4.05,
+              44.15
+            ],
+            [
+              3.95,
+              45.05
+            ],
+            [
+              3.1,
+              45.1
+            ],
+            [
+              2.95,
+              44.05
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "13",
+        "name": "Bouches-du-Rhone",
+        "label": [
+          5.2,
+          43.45
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              4.45,
+              43.05
+            ],
+            [
+              5.85,
+              43.05
+            ],
+            [
+              5.95,
+              43.75
+            ],
+            [
+              4.7,
+              43.95
+            ],
+            [
+              4.45,
+              43.05
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

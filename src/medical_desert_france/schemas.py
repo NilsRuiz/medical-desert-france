@@ -55,3 +55,15 @@ class DashboardMetricRead(BaseModel):
     computed_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class DepartmentDashboardRead(BaseModel):
+    department_code: str
+    department_name: str
+    region_code: str | None = None
+    region_name: str | None = None
+    commune_count: int
+    population: int
+    avg_apl_score: float | None = None
+    high_risk_communes: int
+    risk_class: str
